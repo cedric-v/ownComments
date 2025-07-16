@@ -61,57 +61,9 @@
 
 ---
 
-## 🌐 Example Frontend Integration (HTML)
+## Frontend Integration Example
 
-Paste this code on every page where you want a distinct comment thread:
-
-```html
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-<script>
-  const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "your-project.firebaseapp.com",
-    projectId: "your-project",
-    storageBucket: "your-project.appspot.com",
-    messagingSenderId: "...",
-    appId: "..."
-  };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-</script>
-<div id="comments"></div>
-<input id="name" placeholder="Your name">
-<input id="text" placeholder="Your comment">
-<button onclick="addComment()">Send</button>
-<script>
-  function loadComments() {
-    db.collection('comments').doc(encodeURIComponent(window.location.pathname)).collection('messages')
-      .orderBy('timestamp', 'asc')
-      .onSnapshot(snapshot => {
-        const commentsDiv = document.getElementById('comments');
-        commentsDiv.innerHTML = '';
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          commentsDiv.innerHTML += `<p><b>${data.name}</b>: ${data.text}</p>`;
-        });
-      });
-  }
-  function addComment() {
-    const name = document.getElementById('name').value;
-    const text = document.getElementById('text').value;
-    db.collection('comments').doc(encodeURIComponent(window.location.pathname)).collection('messages').add({
-      name,
-      text,
-      timestamp: new Date()
-    }).then(() => {
-      document.getElementById('text').value = '';
-    });
-  }
-  loadComments();
-</script>
-```
+For a complete, secure, and up-to-date frontend integration example, see [comments.html](./comments.html).
 
 ---
 
@@ -122,15 +74,7 @@ Paste this code on every page where you want a distinct comment thread:
 
 ---
 
-## 🗒️ Special Notes: Hyvor Talk Format & Pagination
-
-### 🔄 Hyvor Talk Format Handling
-- When importing comments from Hyvor Talk, the comment text may be stored as a JSON object (Hyvor's rich text format) in Firestore.
-- The frontend includes a function `extractPlainTextFromHyvorBody` that automatically converts this format to plain text for display.
-- **New comments** added via the form are stored as simple strings, but the function ensures both formats are displayed correctly.
-- If you are certain all comments are now plain text, you can remove this function and use the text directly.
-
-### 📄 Pagination System
+## 📄 Pagination System
 - The frontend displays comments in pages, with a default of **20 comments per page**.
 - If there are more than 20 comments, navigation buttons ("Précédent"/"Suivant") appear below the list to switch pages without reloading.
 - This is handled entirely client-side for a smooth user experience.
@@ -191,6 +135,6 @@ node import-to-firestore.node.js <cleaned-file.json>
 
 ## Available Scripts
 
-- `convert-comments-to-plain.node.js` — Converts all comments to plain text, handling Hyvor rich text format.
-- `import-to-firestore.node.js` — Imports cleaned comments into Firestore.
-- `export-comments.node.js` — Exports all comments for a given pageId from Firestore to a JSON file.
+- `convert-comments-to-plain.node.js`: Node.js script to convert all comments (including Hyvor rich text) to plain text before import
+- `import-to-firestore.node.js`: Node.js script to import cleaned comments into Firestore
+- `transform-hyvor-to-firestore.node.js`: Converts a Hyvor Talk export to Firestore format (Node.js)
