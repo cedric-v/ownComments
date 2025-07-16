@@ -54,6 +54,21 @@
 
 ---
 
+## 🧹 Duplicate Prevention & Cleanup
+
+### Automatic Duplicate Prevention
+- The import script (`import-to-firestore.node.js`) uses a deterministic ID (hash of name+text+timestamp) for each comment.
+- This ensures that re-importing the same data will not create duplicate comments in Firestore.
+
+### Cleaning Up Existing Duplicates
+- If you previously imported comments and have duplicates, you can run the cleanup script:
+  ```sh
+  node delete-old-comments.node.js
+  ```
+- This script scans all comment threads and deletes duplicate comments (same name+text+timestamp), keeping only the first occurrence.
+
+---
+
 ## 🌐 Example Frontend Integration (HTML)
 
 Paste this code on every page where you want a distinct comment thread:
@@ -163,3 +178,27 @@ However, compliance with the EU GDPR and Swiss nFADP depends on your configurati
 
 ## 📝 License
 BSD-3-Clause
+
+## Comment Importation Workflow
+
+### 1. Convert Hyvor/Exported Comments to Plain Text
+Use the script below to convert all comments (including Hyvor rich text) to plain text:
+
+```sh
+node convert-comments-to-plain.node.js <input-file.json>
+```
+- This will create a new file with `-plain.json` appended to the name.
+
+### 2. Import Cleaned Comments into Firestore
+Use your import script to load the cleaned comments into Firestore:
+
+```sh
+node import-to-firestore.node.js <cleaned-file.json>
+```
+- Make sure your Firestore is empty or cleaned before importing to avoid duplicates.
+
+## Available Scripts
+
+- `convert-comments-to-plain.node.js` — Converts all comments to plain text, handling Hyvor rich text format.
+- `import-to-firestore.node.js` — Imports cleaned comments into Firestore.
+- `export-comments.node.js` — Exports all comments for a given pageId from Firestore to a JSON file.
