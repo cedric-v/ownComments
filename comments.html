@@ -1,0 +1,140 @@
+<!-- Comment Section -->
+<h3>Ajouter un commentaire</h3>
+<form id="comment-form">
+  <input type="text" id="name" placeholder="Votre nom" required /><br />
+  <textarea id="text" placeholder="Votre commentaire" required></textarea><br />
+  <button type="submit">Envoyer</button>
+</form>
+<div id="comments-container"></div>
+<div id="pagination-controls" style="margin-top:10px;"></div>
+
+<!-- Firebase App + Firestore -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+<!-- Fonctions utilitaires -->
+<script>
+function extractPlainTextFromHyvorBody(body) {
+  if (typeof body === 'string') {
+    try { body = JSON.parse(body); } catch { return body; }
+  }
+  if (!body || !body.content) return '';
+  return body.content
+    .map(function(block) {
+      if (block.type === 'paragraph' && block.content) {
+        return block.content
+          .filter(function(inline) { return inline.type === 'text'; })
+          .map(function(inline) { return inline.text || ''; })
+          .join('');
+      }
+      if (block.type === 'text' && block.text) {
+        return block.text;
+      }
+      return '';
+    })
+    .filter(Boolean)
+    .join('\n');
+}
+function escapeHTML(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+</script>
+
+<!-- Script principal -->
+<script>
+var firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "your-project.firebaseapp.com",
+    projectId: "your-project",
+    storageBucket: "your-project.appspot.com",
+    messagingSenderId: "...",
+    appId: "..."
+};
+firebase.initializeApp(firebaseConfig);
+var db = firebase.firestore();
+var pageId = encodeURIComponent(window.location.origin + window.location['pathname']);
+var COMMENTS_PER_PAGE = 20;
+var allComments = [];
+var currentPage = 1;
+
+document.getElementById("comment-form").addEventListener("submit", function (e) {
+  e.preventDefault();
+  var name = document.getElementById("name").value.trim();
+  var text = document.getElementById("text").value.trim();
+  if (!name || !text) return;
+  if (/[<>]/.test(name) || /[<>]/.test(text)) {
+    alert("Les caractères < et > ne sont pas autorisés.");
+    return;
+  }
+  db.collection("comments").doc(pageId).collection("messages").add({
+    name: name,
+    text: text,
+    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(function() {
+    document.getElementById("comment-form").reset();
+  });
+});
+
+function renderCommentsPage(page) {
+  var container = document.getElementById("comments-container");
+  container.innerHTML = "<h3>Commentaires</h3>";
+  var start = (page - 1) * COMMENTS_PER_PAGE;
+  var end = start + COMMENTS_PER_PAGE;
+  var pageComments = allComments.slice(start, end);
+  for (var i = 0; i < pageComments.length; i++) {
+    var c = pageComments[i];
+    var text = escapeHTML(extractPlainTextFromHyvorBody(c.text));
+    var name = escapeHTML(c.name);
+    container.innerHTML += '<div style="border-bottom:1px solid #ccc; margin-bottom:10px; padding-bottom:10px;"><strong>' + name + '</strong><br /><p>' + text + '</p></div>';
+  }
+  renderPaginationControls(page);
+}
+
+function renderPaginationControls(page) {
+  var controls = document.getElementById("pagination-controls");
+  var totalPages = Math.ceil(allComments.length / COMMENTS_PER_PAGE);
+  if (totalPages <= 1) {
+    controls.innerHTML = '';
+    return;
+  }
+  var html = '';
+  if (page > 1) {
+    html += '<button id="prev-page">&lt; Précédent</button> ';
+  }
+  html += 'Page ' + page + ' / ' + totalPages;
+  if (page < totalPages) {
+    html += ' <button id="next-page">Suivant &gt;</button>';
+  }
+  controls.innerHTML = html;
+  if (page > 1) {
+    document.getElementById("prev-page").onclick = function() {
+      currentPage--;
+      renderCommentsPage(currentPage);
+    };
+  }
+  if (page < totalPages) {
+    document.getElementById("next-page").onclick = function() {
+      currentPage++;
+      renderCommentsPage(currentPage);
+    };
+  }
+}
+
+db.collection("comments").doc(pageId).collection("messages")
+  .orderBy("timestamp", "desc")
+  .onSnapshot(function(snapshot) {
+    allComments = [];
+    snapshot.forEach(function(doc) {
+      allComments.push(doc.data());
+    });
+    currentPage = 1;
+    renderCommentsPage(currentPage);
+  }, function(error) {
+    console.error("Erreur Firestore :", error);
+  });
+</script>

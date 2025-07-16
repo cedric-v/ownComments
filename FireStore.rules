@@ -1,0 +1,19 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /comments/{pageId}/messages/{messageId} {
+      // Lecture publique
+      allow read: if true;
+
+      // Écriture : seulement si les champs sont des chaînes non vides et le timestamp est correct
+      allow write: if
+        request.resource.data.name is string &&
+        request.resource.data.text is string &&
+        request.resource.data.timestamp is timestamp &&
+        request.resource.data.name.size() > 0 &&
+        request.resource.data.text.size() > 0 &&
+        request.resource.data.name.size() <= 100 &&
+        request.resource.data.text.size() <= 2000;
+    }
+  }
+}
