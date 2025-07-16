@@ -39,17 +39,17 @@
 1. **Clone the repository**
 2. Install the required dependencies:
    ```sh
-   npm install firebase-admin
+   npm install firebase-admin firebase
    ```
 3. Place your `serviceAccountKey.json` file at the project root (downloadable from Firebase Console > Project Settings > Service Accounts).
 4. (Optional) Convert a Hyvor Talk export:
    ```sh
-   node node\ transform-hyvor-to-firestore.js
+   node transform-hyvor-to-firestore.node.js
    ```
    This generates `firestore-comments.json`.
 5. Import comments into Firestore:
    ```sh
-   node import-to-firestore.js
+   node import-to-firestore.node.js
    ```
 
 ---
