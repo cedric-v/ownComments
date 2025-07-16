@@ -18,7 +18,6 @@
 - `comments.html`: Example frontend to embed on your web pages (browser only)
 - `import-to-firestore.node.js`: Node.js script to import comments into Firestore
 - `transform-hyvor-to-firestore.node.js`: Converts a Hyvor Talk export to Firestore format (Node.js)
-- `delete-old-comments.node.js`: Node.js script to delete old comment threads from Firestore
 - `firestore-comments.json`: Generated file containing comments to import
 - `serviceAccountKey.json`: Firebase private key (generate from Firebase console, **do not share**)
 - `FireStore.rules`: Example Firestore security rules for this project. **Review and adapt these rules before deploying to production.**
@@ -54,18 +53,11 @@
 
 ---
 
-## 🧹 Duplicate Prevention & Cleanup
+## 🧹 Duplicate Prevention
 
 ### Automatic Duplicate Prevention
 - The import script (`import-to-firestore.node.js`) uses a deterministic ID (hash of name+text+timestamp) for each comment.
 - This ensures that re-importing the same data will not create duplicate comments in Firestore.
-
-### Cleaning Up Existing Duplicates
-- If you previously imported comments and have duplicates, you can run the cleanup script:
-  ```sh
-  node delete-old-comments.node.js
-  ```
-- This script scans all comment threads and deletes duplicate comments (same name+text+timestamp), keeping only the first occurrence.
 
 ---
 
