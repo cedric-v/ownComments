@@ -1,140 +1,42 @@
-# OwnComments
+# Automated Email Response & Save Email as PDF
 
-**OwnComments** is a simple, self-hosted solution to add a comment system to any web page, with storage on Google Firestore. It also allows you to import comments from Hyvor Talk.
+This repository contains two Google Apps Script files:
 
----
+- [`autoResponseMailsBasedOnKeywordsGoogleAppsScript.js`](autoResponseMailsBasedOnKeywordsGoogleAppsScript.js): Automatically replies to unread Gmail messages based on detected keywords (placeholders provided) and applies labels.
+- [`saveEmailAsPDF.js`](saveEmailAsPDF.js): Saves emails and PDF attachments from Gmail to Google Drive, applies labels, and archives processed emails.
 
-## ✨ Main Features
-- **Per-page comment threads** (distinct feed per URL)
-- **Secure storage** on Firestore (Firebase)
-- **Easy integration on any HTML page** (e.g., Ontraport)
-- **Pagination**: Comments are displayed in pages (default: 20 per page) with navigation controls
-- **Security**: User input is sanitized and escaped to prevent execution of malicious scripts in the browser
-- Automated **import of Hyvor Talk comments**
+## Setup & Usage
 
----
+1. **Copy scripts to the Google Apps Script editor** attached to your Gmail account.
+2. **Configure labels and folder IDs** as needed:
+   - Update `labelSource`, `labelProcessed`, and `folderId` in [`saveEmailAsPDF.js`](saveEmailAsPDF.js).
+   - Update `keywordsSet1`, `keywordsSet2`, and response placeholders in [`autoResponseMailsBasedOnKeywordsGoogleAppsScript.js`](autoResponseMailsBasedOnKeywordsGoogleAppsScript.js).
+   - Ensure labels used in both scripts exist or are created by the script.
+3. **Set up time-based triggers** in Apps Script:
+   - For the automatic keyword-based reply script, configure a time-driven trigger to run every minute for near real-time responses.
+   - For the email-to-PDF script, set the trigger to run every 12 hours or as needed.
+4. **Review and adapt reply templates and keywords** for your organization.
 
-## 📁 File Structure
-- `comments.html`: Example frontend to embed on your web pages (browser only)
-- `import-to-firestore.node.js`: Node.js script to import comments into Firestore
-- `transform-hyvor-to-firestore.node.js`: Converts a Hyvor Talk export to Firestore format (Node.js)
-- `firestore-comments.json`: Generated file containing comments to import
-- `serviceAccountKey.json`: Firebase private key (generate from Firebase console, **do not share**)
-- `FireStore.rules`: Example Firestore security rules for this project. **Review and adapt these rules before deploying to production.**
+## Permissions
 
-**Note:** All files with the `.node.js` extension are intended to be run with Node.js (backend/CLI only), not in the browser.
+These scripts require access to Gmail and Google Drive. When deploying, review and accept the necessary permissions.
 
----
+## Security Notice
 
-## ⚙️ Prerequisites
-- Node.js (for import)
-- A Firebase project with Firestore enabled
-- A Firebase service account key (`serviceAccountKey.json`)
+- Do not publish personal credentials or sensitive information.
+- Review reply templates and keywords before publishing.
 
----
+## License
 
-## 🚀 Installation & Comment Import
+BSD 3-Clause "New" or "Revised" License
 
-1. **Clone the repository**
-2. Install the required dependencies:
-   ```sh
-   npm install firebase-admin firebase
-   ```
-3. Place your `serviceAccountKey.json` file at the project root (downloadable from Firebase Console > Project Settings > Service Accounts).
-4. (Optional) Convert a Hyvor Talk export:
-   ```sh
-   node transform-hyvor-to-firestore.node.js
-   ```
-   This generates `firestore-comments.json`.
-5. Import comments into Firestore:
-   ```sh
-   node import-to-firestore.node.js
-   ```
+Copyright (c) 2025, Cédric Vonlanthen  
+All rights reserved.
 
----
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
-## 🧹 Duplicate Prevention
+1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 
-### Automatic Duplicate Prevention
-- The import script (`import-to-firestore.node.js`) uses a deterministic ID (hash of name+text+timestamp) for each comment.
-- This ensures that re-importing the same data will not create duplicate comments in Firestore.
-
----
-
-## Frontend Integration Example
-
-For a complete, secure, and up-to-date frontend integration example, see [comments.html](./comments.html).
-
----
-
-## 🔒 Security Tips
-- **Never expose** the `serviceAccountKey.json` file on the client side or in a public repository.
-- After import, restrict your Firestore rules to prevent abuse.
-- The frontend API key is not secret, but always use appropriate Firestore rules.
-
----
-
-## 📄 Pagination System
-- The frontend displays comments in pages, with a default of **20 comments per page**.
-- If there are more than 20 comments, navigation buttons ("Précédent"/"Suivant") appear below the list to switch pages without reloading.
-- This is handled entirely client-side for a smooth user experience.
-
-#### 🔧 How to configure the number of comments per page
-- In the `comments.html` file, look for the line:
-  ```js
-  var COMMENTS_PER_PAGE = 20;
-  ```
-- Change the value (`20`) to your desired number of comments per page.
-
----
-
-## 🛡️ Data Protection & Compliance (GDPR / nFADP)
-
-OwnComments is designed to store only minimal user data (name, comment, timestamp) and does not collect emails or IP addresses by default.
-
-However, compliance with the EU GDPR and Swiss nFADP depends on your configuration and usage:
-- Ensure your Firestore database is hosted in a region compliant with your legal requirements (e.g., EU servers).
-- Update your privacy policy to inform users about data storage and their rights.
-- Provide a way for users to request deletion of their comments if needed.
-- Do not collect more data than necessary.
-
-**You are responsible for ensuring your use of OwnComments complies with applicable data protection laws.**
-
----
-
-## ❓ Quick FAQ
-- **Q: Is Node.js required to display comments?**
-  - No, only for importing. Display is handled client-side with the Firebase SDK.
-- **Q: Can I have a separate comment thread per page?**
-  - Yes, this is automatic using the page URL.
-- **Q: Can I import formats other than Hyvor Talk?**
-  - You just need to adapt the conversion script.
-
----
-
-## 📝 License
-BSD-3-Clause
-
-## Comment Importation Workflow
-
-### 1. Convert Hyvor/Exported Comments to Plain Text
-Use the script below to convert all comments (including Hyvor rich text) to plain text:
-
-```sh
-node convert-comments-to-plain.node.js <input-file.json>
-```
-- This will create a new file with `-plain.json` appended to the name.
-
-### 2. Import Cleaned Comments into Firestore
-Use your import script to load the cleaned comments into Firestore:
-
-```sh
-node import-to-firestore.node.js <cleaned-file.json>
-```
-- Make sure your Firestore is empty or cleaned before importing to avoid duplicates.
-
-## Available Scripts
-
-- `convert-comments-to-plain.node.js`: Node.js script to convert all comments (including Hyvor rich text) to plain text before import
-- `import-to-firestore.node.js`: Node.js script to import cleaned comments into Firestore
-- `transform-hyvor-to-firestore.node.js`: Converts a Hyvor Talk export to Firestore format (Node.js)
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
