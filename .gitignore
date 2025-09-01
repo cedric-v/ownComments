@@ -19,4 +19,5 @@ Thumbs.db
 # VSCode workspace files
 *.code-workspace 
 cleaned-comments.json 
-2025-05-09-3126-export-hyvor-talks.json 
+2025-05-09-3126-export-hyvor-talks.json serviceAccountKey.json
+comments-ontraport-prod.html
