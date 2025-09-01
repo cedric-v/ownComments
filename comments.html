@@ -16,7 +16,7 @@
 <script>
 function escapeHTML(str) {
   return String(str)
-    .replace(/&/g, "&amp;")
+    .replace(/&/g, "&")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
@@ -111,6 +111,21 @@ db.collection("comments").doc(pageId).collection("messages")
     snapshot.forEach(function(doc) {
       allComments.push(doc.data());
     });
+    
+    // Ensure comments are sorted by newest first (fallback sort)
+    allComments.sort(function(a, b) {
+      if (a.timestamp && b.timestamp) {
+        try {
+          var timeA = a.timestamp.toDate ? a.timestamp.toDate() : new Date(a.timestamp);
+          var timeB = b.timestamp.toDate ? b.timestamp.toDate() : new Date(b.timestamp);
+          return timeB - timeA;
+        } catch (e) {
+          return 0;
+        }
+      }
+      return 0;
+    });
+    
     currentPage = 1;
     renderCommentsPage(currentPage);
   }, function(error) {
