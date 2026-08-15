@@ -7,6 +7,13 @@ serviceAccountKey.json
 # Firestore data export (do not commit user data)
 firestore-comments.json
 
+# Hyvor Talk export (personal data)
+2025-05-09-3126-export-hyvor-talks.json
+
+# Cleaned / derived local files
+cleaned-comments.json
+comments-ontraport-prod.html
+
 # Logs
 npm-debug.log*
 yarn-debug.log*
@@ -17,7 +24,4 @@ yarn-error.log*
 Thumbs.db
 
 # VSCode workspace files
-*.code-workspace 
-cleaned-comments.json 
-2025-05-09-3126-export-hyvor-talks.json serviceAccountKey.json
-comments-ontraport-prod.html
+*.code-workspace

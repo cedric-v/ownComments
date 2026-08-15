@@ -18,6 +18,8 @@
 - `comments.html`: Example frontend to embed on your web pages (browser only)
 - `import-to-firestore.node.js`: Node.js script to import comments into Firestore
 - `transform-hyvor-to-firestore.node.js`: Converts a Hyvor Talk export to Firestore format (Node.js)
+- `convert-comments-to-plain.node.js`: Converts rich-text comments to plain text (Node.js)
+- `package.json`: Node.js dependencies for the import scripts (`firebase-admin`)
 - `firestore-comments.json`: Generated file containing comments to import
 - `serviceAccountKey.json`: Firebase private key (generate from Firebase console, **do not share**)
 - `FireStore.rules`: Example Firestore security rules for this project. **Review and adapt these rules before deploying to production.**
@@ -27,7 +29,7 @@
 ---
 
 ## ⚙️ Prerequisites
-- Node.js (for import)
+- Node.js **>= 22** (required by `firebase-admin` v14)
 - A Firebase project with Firestore enabled
 - A Firebase service account key (`serviceAccountKey.json`)
 
@@ -38,17 +40,17 @@
 1. **Clone the repository**
 2. Install the required dependencies:
    ```sh
-   npm install firebase-admin firebase
+   npm install
    ```
 3. Place your `serviceAccountKey.json` file at the project root (downloadable from Firebase Console > Project Settings > Service Accounts).
 4. (Optional) Convert a Hyvor Talk export:
    ```sh
-   node transform-hyvor-to-firestore.node.js
+   npm run transform
    ```
    This generates `firestore-comments.json`.
 5. Import comments into Firestore:
    ```sh
-   node import-to-firestore.node.js
+   npm run import
    ```
 
 ---
@@ -67,17 +69,20 @@ For a complete, secure, and up-to-date frontend integration example, see [commen
 
 ---
 
-## 🔒 Security Tips
+## 🛡️ Security Tips
 - **Never expose** the `serviceAccountKey.json` file on the client side or in a public repository.
-- After import, restrict your Firestore rules to prevent abuse.
+- After import, restrict your Firestore rules to prevent abuse (see `FireStore.rules`).
 - The frontend API key is not secret, but always use appropriate Firestore rules.
+- The rules shipped here only allow `create` (no public update/delete), whitelist the fields, force the server timestamp, and reject `<`/`>` characters. Review them before deploying.
 
 ---
 
 ## 📄 Pagination System
-- The frontend displays comments in pages, with a default of **20 comments per page**.
-- If there are more than 20 comments, navigation buttons ("Précédent"/"Suivant") appear below the list to switch pages without reloading.
-- This is handled entirely client-side for a smooth user experience.
+- The frontend loads comments **page by page from Firestore** (server-side pagination using `limit()` + `startAfter()` cursors), with a default of **20 comments per page**.
+- Navigation buttons ("Précédent"/"Suivant") appear when needed; "Suivant" disappears on the last page. The total number of pages is computed with a Firestore count query.
+- This scales to thousands of comments without loading them all into the browser.
+
+> Note: real-time updates (`onSnapshot`) were removed in favor of pagination. The comment list refreshes after posting a new comment.
 
 #### 🔧 How to configure the number of comments per page
 - In the `comments.html` file, look for the line:

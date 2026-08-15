@@ -1,0 +1,18 @@
+{
+  "name": "owncomments",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Self-hosted comment system for Firestore (Node.js import scripts)",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "transform": "node transform-hyvor-to-firestore.node.js",
+    "convert-plain": "node convert-comments-to-plain.node.js",
+    "import": "node import-to-firestore.node.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^14.2.0"
+  },
+  "license": "BSD-3-Clause"
+}
